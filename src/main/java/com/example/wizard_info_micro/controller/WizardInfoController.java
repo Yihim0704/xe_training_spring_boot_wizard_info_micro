@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/wizard-info")
+@RequestMapping("/api/v1/wizard-info")
 public class WizardInfoController {
     @Autowired
     private WizardInfoService wizardInfoService;
