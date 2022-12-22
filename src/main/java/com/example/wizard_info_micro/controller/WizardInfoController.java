@@ -1,40 +1,20 @@
 package com.example.wizard_info_micro.controller;
 
 import com.example.wizard_info_micro.model.WizardInfo;
-import com.example.wizard_info_micro.service.WizardInfoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/v1/wizard-info")
-public class WizardInfoController {
-    @Autowired
-    private WizardInfoService wizardInfoService;
 
-    @PostMapping("add")
-    public WizardInfo addWizardInfo(@RequestBody WizardInfo wizardInfo){
-        return wizardInfoService.saveWizardInfo(wizardInfo);
-    }
+public interface WizardInfoController {
 
-    @GetMapping("find-all")
-    public List<WizardInfo> findAllWizardInfo (){
-        return wizardInfoService.getAllWizardInfo();
-    }
+    WizardInfo addWizardInfo(WizardInfo wizardInfo);
 
-    @GetMapping("find-id/{id}")
-    public WizardInfo findWizardInfoById (@PathVariable String id){
-        return wizardInfoService.getWizardInfoById(id);
-    }
+    List<WizardInfo> findAllWizardInfo();
 
-    @PutMapping("update-id/{id}")
-    public WizardInfo changeWizardInfoById(@PathVariable String id, @RequestBody WizardInfo wizardInfo){
-        return wizardInfoService.updateWizardInfoById(id, wizardInfo);
-    }
+    WizardInfo findWizardInfoById(String id);
 
-    @DeleteMapping("delete-id/{id}")
-    public String removeWizardInfoById(@PathVariable String id){
-        return wizardInfoService.deleteWizardInfo(id);
-    }
+    WizardInfo changeWizardInfoById(String id, WizardInfo wizardInfo);
+
+    String removeWizardInfoById(String id);
+
 }
