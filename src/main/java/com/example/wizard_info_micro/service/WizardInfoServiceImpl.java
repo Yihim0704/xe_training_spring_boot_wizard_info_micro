@@ -14,6 +14,7 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     @Autowired
     private WizardInfoRepository wizardInfoRepository;
 
+
     @Override
     public WizardInfo saveWizardInfo(WizardInfo wizardInfo) {
         String id = UUID.randomUUID().toString();

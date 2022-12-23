@@ -2,20 +2,26 @@ package com.example.wizard_info_micro.controller;
 
 import com.example.wizard_info_micro.model.WizardInfo;
 import com.example.wizard_info_micro.service.WizardInfoServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/wizard-info")
 public class WizardInfoControllerImpl implements WizardInfoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(WizardInfoControllerImpl.class);
+
     @Autowired
     private WizardInfoServiceImpl wizardInfoServiceImpl;
 
     @Override
     @PostMapping("add")
-    public WizardInfo addWizardInfo(@RequestBody WizardInfo wizardInfo) {
+    public WizardInfo addWizardInfo(@RequestBody @Valid WizardInfo wizardInfo) {
         return wizardInfoServiceImpl.saveWizardInfo(wizardInfo);
     }
 
