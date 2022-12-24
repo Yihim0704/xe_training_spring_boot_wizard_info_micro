@@ -1,10 +1,10 @@
 package com.example.wizard_info_micro.service;
 
 import com.example.wizard_info_micro.database.WizardInfoRepository;
-import com.example.wizard_info_micro.exception.ApiExceptionsHandler;
-import com.example.wizard_info_micro.exception.NoWizardInfoFoundException;
-import com.example.wizard_info_micro.exception.WizardIdNotFoundException;
-import com.example.wizard_info_micro.exception.WizardInfoExistException;
+import com.example.wizard_info_micro.exception.server.NoWizardInfoFoundException;
+import com.example.wizard_info_micro.exception.server.ServerExceptionsHandler;
+import com.example.wizard_info_micro.exception.server.WizardIdNotFoundException;
+import com.example.wizard_info_micro.exception.server.WizardInfoExistException;
 import com.example.wizard_info_micro.model.WizardInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     @Autowired
     private WizardInfoRepository wizardInfoRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiExceptionsHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerExceptionsHandler.class);
 
     @Override
     public WizardInfo saveWizardInfo(WizardInfo wizardInfo) {

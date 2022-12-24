@@ -1,7 +1,8 @@
-package com.example.wizard_info_micro.exception;
+package com.example.wizard_info_micro.exception.server;
 
 import brave.Span;
 import brave.Tracer;
+import com.example.wizard_info_micro.exception.ExceptionFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class ApiExceptionsHandler {
+public class ServerExceptionsHandler {
 
     @Autowired
     private Tracer tracer;
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiExceptionsHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerExceptionsHandler.class);
 
     public String generateTraceId() {
         String traceId = null;

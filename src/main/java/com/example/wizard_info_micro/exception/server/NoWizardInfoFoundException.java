@@ -1,4 +1,4 @@
-package com.example.wizard_info_micro.exception;
+package com.example.wizard_info_micro.exception.server;
 
 public class NoWizardInfoFoundException extends RuntimeException {
 
