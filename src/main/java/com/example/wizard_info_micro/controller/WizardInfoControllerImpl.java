@@ -39,7 +39,7 @@ public class WizardInfoControllerImpl implements WizardInfoController {
 
     @Override
     @PutMapping("update-id/{id}")
-    public WizardInfo changeWizardInfoById(@PathVariable String id, @RequestBody WizardInfo wizardInfo) {
+    public WizardInfo changeWizardInfoById(@PathVariable String id, @RequestBody @Valid WizardInfo wizardInfo) {
         return wizardInfoServiceImpl.updateWizardInfoById(id, wizardInfo);
     }
 

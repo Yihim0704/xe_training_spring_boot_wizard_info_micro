@@ -4,16 +4,14 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StatusException {
+public class ExceptionFormat {
     private String type;
     private int code;
     private LocalDateTime timestamp;
     private String traceId;
     private Map<String, Object> errors;
-    //private  Map<String, Object> response;
 
-
-    public StatusException(String type, int code, LocalDateTime timestamp, String traceId, Map<String, Object> errors) {
+    public ExceptionFormat(String type, int code, LocalDateTime timestamp, String traceId, Map<String, Object> errors) {
         setType(type);
         setCode(code);
         setTimestamp(timestamp);
@@ -61,7 +59,7 @@ public class StatusException {
         this.errors = errors;
     }
 
-    public Map<String, Object> toObject() {
+    public Map<String, Object> toFormat() {
         Map<String, Object> status = new HashMap<>();
         Map<String, Object> details = new HashMap<>();
         details.put("type", getType());

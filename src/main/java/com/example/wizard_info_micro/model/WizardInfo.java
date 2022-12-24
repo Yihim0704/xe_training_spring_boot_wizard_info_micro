@@ -1,25 +1,30 @@
 package com.example.wizard_info_micro.model;
 
+import org.hibernate.validator.constraints.Range;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "wizard_info")
 public class WizardInfo {
     @Id
     private String id;
+
     @NotNull(message = "Wizard name should not be null.")
     @NotBlank(message = "Wizard name should not be blank.")
+    @Pattern(regexp = "^[a-zA-Z ]+$", message = "Wizard name should not be containing special characters and numbers.")
     private String name;
-    @Min(value = 18, message = "Wizard should be at least 18 years of age.")
-    @Max(value = 70, message = "Wizard should be below 70 years of age.")
+
+    @Range(min = 18, max = 70, message = "Wizard should be between 18 to 70 years of age.")
     private int age;
+
     private String joinedDate;
+    
     private boolean active;
 
     public WizardInfo() {
