@@ -58,15 +58,16 @@ public class WizardInfoServiceImpl implements WizardInfoService {
         if (!wizardInfoRepository.findById(id).isPresent()) {
             throw new WizardIdNotFoundException("Wizard ID does not exist.");
         }
-        List<WizardInfo> existWizardInfo = wizardInfoRepository.findWizardInfoByName(wizardInfo.getName());
-        if (!existWizardInfo.isEmpty()) {
+        WizardInfo existingWizardInfo = wizardInfoRepository.findById(id).orElse(null);
+        if (existingWizardInfo.getName().equalsIgnoreCase(wizardInfo.getName())) {
+            existingWizardInfo.setName(wizardInfo.getName().trim());
+            existingWizardInfo.setAge(wizardInfo.getAge());
+            existingWizardInfo.setActive(wizardInfo.isActive());
+            return wizardInfoRepository.save(existingWizardInfo);
+
+        } else {
             throw new WizardInfoExistException("Wizard name exists, consider change to another name");
         }
-        WizardInfo existingWizardInfo = wizardInfoRepository.findById(id).orElse(null);
-        existingWizardInfo.setName(wizardInfo.getName().trim());
-        existingWizardInfo.setAge(wizardInfo.getAge());
-        existingWizardInfo.setActive(wizardInfo.isActive());
-        return wizardInfoRepository.save(existingWizardInfo);
     }
 
     @Override
