@@ -24,8 +24,9 @@ public class WizardInfoServiceImpl implements WizardInfoService {
 
     @Override
     public WizardInfo saveWizardInfo(WizardInfo wizardInfo) {
-        if (!wizardInfoRepository.findWizardInfoByName(wizardInfo.getName()).isEmpty()) {
-            throw new WizardInfoExistException("Wizard info exists.");
+        List<WizardInfo> existWizardInfo = wizardInfoRepository.findWizardInfoByName(wizardInfo.getName());
+        if (!existWizardInfo.isEmpty()) {
+            throw new WizardInfoExistException("Wizard info exists, consider update it with wizard Id: " + existWizardInfo.get(0).getId());
         }
         String id = UUID.randomUUID().toString();
         String joinedDate = String.valueOf(java.time.LocalDate.now());
@@ -56,6 +57,10 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     public WizardInfo updateWizardInfoById(String id, WizardInfo wizardInfo) {
         if (!wizardInfoRepository.findById(id).isPresent()) {
             throw new WizardIdNotFoundException("Wizard ID does not exist.");
+        }
+        List<WizardInfo> existWizardInfo = wizardInfoRepository.findWizardInfoByName(wizardInfo.getName());
+        if (!existWizardInfo.isEmpty()) {
+            throw new WizardInfoExistException("Wizard name exists, consider change to another name");
         }
         WizardInfo existingWizardInfo = wizardInfoRepository.findById(id).orElse(null);
         existingWizardInfo.setName(wizardInfo.getName().trim());

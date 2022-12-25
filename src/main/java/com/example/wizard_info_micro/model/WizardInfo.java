@@ -24,7 +24,7 @@ public class WizardInfo {
     private int age;
 
     private String joinedDate;
-    
+
     private boolean active;
 
     public WizardInfo() {
@@ -76,5 +76,16 @@ public class WizardInfo {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    @Override
+    public String toString() {
+        return "WizardInfo{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                ", joinedDate='" + joinedDate + '\'' +
+                ", active=" + active +
+                '}';
     }
 }
