@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WizardInfoRepository extends JpaRepository<WizardInfo, String> {
-    WizardInfo findWizardInfoByName(String name);
+    WizardInfo findByName(String name);
 }

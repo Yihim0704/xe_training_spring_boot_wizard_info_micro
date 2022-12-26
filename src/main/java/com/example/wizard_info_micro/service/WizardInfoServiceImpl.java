@@ -2,7 +2,6 @@ package com.example.wizard_info_micro.service;
 
 import com.example.wizard_info_micro.database.WizardInfoRepository;
 import com.example.wizard_info_micro.exception.server.NoWizardInfoFoundException;
-import com.example.wizard_info_micro.exception.server.ServerExceptionsHandler;
 import com.example.wizard_info_micro.exception.server.WizardIdNotFoundException;
 import com.example.wizard_info_micro.exception.server.WizardInfoExistException;
 import com.example.wizard_info_micro.model.WizardInfo;
@@ -20,11 +19,11 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     @Autowired
     private WizardInfoRepository wizardInfoRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(ServerExceptionsHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(WizardInfoServiceImpl.class);
 
     @Override
     public WizardInfo saveWizardInfo(WizardInfo wizardInfo) {
-        WizardInfo existWizardInfo = wizardInfoRepository.findWizardInfoByName(wizardInfo.getName());
+        WizardInfo existWizardInfo = wizardInfoRepository.findByName(wizardInfo.getName().trim());
         if (existWizardInfo != null) {
             throw new WizardInfoExistException("Wizard info exists, consider update it with wizard Id: " + existWizardInfo.getId());
         }
@@ -58,7 +57,7 @@ public class WizardInfoServiceImpl implements WizardInfoService {
         if (!wizardInfoRepository.findById(id).isPresent()) {
             throw new WizardIdNotFoundException("Wizard ID does not exist.");
         }
-        WizardInfo existWizardInfoName = wizardInfoRepository.findWizardInfoByName(wizardInfo.getName());
+        WizardInfo existWizardInfoName = wizardInfoRepository.findByName(wizardInfo.getName());
         WizardInfo existingWizardInfo = getWizardInfoById(id);
         if (existWizardInfoName == null || existWizardInfoName != null && existingWizardInfo.getName().equalsIgnoreCase(wizardInfo.getName())) {
             existingWizardInfo.setName(wizardInfo.getName().trim());
