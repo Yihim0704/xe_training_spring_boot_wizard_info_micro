@@ -47,7 +47,7 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     @Override
     public WizardInfo getWizardInfoById(String id) {
         if (!wizardInfoRepository.findById(id).isPresent()) {
-            throw new WizardIdNotFoundException("Wizard ID does not exist.");
+            throw new WizardIdNotFoundException("Wizard info Id does not exist.");
         }
         return wizardInfoRepository.findById(id).orElse(null);
     }
