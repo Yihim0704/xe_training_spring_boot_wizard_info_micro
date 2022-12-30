@@ -23,7 +23,7 @@ public class ServerExceptionsHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerExceptionsHandler.class);
 
-    public String generateTraceId() {
+    public String getTraceId() {
         String traceId = null;
         Span span = tracer.currentSpan();
         if (span != null) {
@@ -36,7 +36,7 @@ public class ServerExceptionsHandler {
     public Map<String, Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, Object> message = new HashMap<>();
         Map<String, String> errorMap = new HashMap<>();
-        String methodArgumentNotValidExceptionTraceId = generateTraceId();
+        String methodArgumentNotValidExceptionTraceId = getTraceId();
         ex.getBindingResult().getFieldErrors().forEach(error -> {
             errorMap.put(error.getField(), error.getDefaultMessage());
         });
@@ -51,7 +51,7 @@ public class ServerExceptionsHandler {
     @ExceptionHandler(WizardInfoExistException.class)
     public Map<String, Object> handleWizardInfoExistException(WizardInfoExistException ex) {
         Map<String, Object> message = new HashMap<>();
-        String wizardInfoExistException = generateTraceId();
+        String wizardInfoExistException = getTraceId();
         message.put("code", HttpStatus.CONFLICT.toString());
         message.put("message", ex.getLocalizedMessage());
         ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), wizardInfoExistException, message);
@@ -63,7 +63,7 @@ public class ServerExceptionsHandler {
     @ExceptionHandler(NoWizardInfoFoundException.class)
     public Map<String, Object> handleNoWizardInfoFoundException(NoWizardInfoFoundException ex) {
         Map<String, Object> message = new HashMap<>();
-        String noWizardInfoFoundExceptionTraceId = generateTraceId();
+        String noWizardInfoFoundExceptionTraceId = getTraceId();
         message.put("code", HttpStatus.NO_CONTENT.toString());
         message.put("message", ex.getLocalizedMessage());
         ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), noWizardInfoFoundExceptionTraceId, message);
@@ -75,7 +75,7 @@ public class ServerExceptionsHandler {
     @ExceptionHandler(WizardIdNotFoundException.class)
     public Map<String, Object> handleWizardIdNotFoundException(WizardIdNotFoundException ex) {
         Map<String, Object> message = new HashMap<>();
-        String wizardIdNotFoundExceptionTraceId = generateTraceId();
+        String wizardIdNotFoundExceptionTraceId = getTraceId();
         message.put("code", HttpStatus.NOT_FOUND.toString());
         message.put("message", ex.getLocalizedMessage());
         ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), wizardIdNotFoundExceptionTraceId, message);

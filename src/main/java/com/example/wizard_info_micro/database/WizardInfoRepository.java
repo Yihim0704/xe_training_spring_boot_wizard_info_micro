@@ -4,7 +4,9 @@ import com.example.wizard_info_micro.model.WizardInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
-public interface WizardInfoRepository extends JpaRepository<WizardInfo, String> {
+public interface WizardInfoRepository extends JpaRepository<WizardInfo, UUID> {
     WizardInfo findByName(String name);
 }

@@ -11,7 +11,7 @@ public interface WizardInfoService {
     List<WizardInfo> getAllWizardInfo();
 
     WizardInfo getWizardInfoById(String id);
-    
+
     WizardInfo updateWizardInfoById(String id, WizardInfo wizardInfo);
 
     String deleteWizardInfo(String id);
