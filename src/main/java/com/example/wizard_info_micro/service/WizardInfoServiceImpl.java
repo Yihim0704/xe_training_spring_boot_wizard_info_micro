@@ -1,17 +1,17 @@
 package com.example.wizard_info_micro.service;
 
+import com.example.wizard_info_micro.business.DetailsValidation;
 import com.example.wizard_info_micro.database.WizardInfoRepository;
-import com.example.wizard_info_micro.exception.server.NoWizardInfoFoundException;
-import com.example.wizard_info_micro.exception.server.WizardIdNotFoundException;
-import com.example.wizard_info_micro.exception.server.WizardInfoExistException;
-import com.example.wizard_info_micro.model.WizardInfo;
+import com.example.wizard_info_micro.entity.WizardInfo;
+import com.example.wizard_info_micro.exception.server.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.client.HttpServerErrorException;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,57 +22,91 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     private WizardInfoRepository wizardInfoRepository;
 
     @Autowired
+    private DetailsValidation detailsValidation;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(WizardInfoServiceImpl.class);
 
     @Override
-    public WizardInfo saveWizardInfo(@Valid WizardInfo wizardInfo) {
-        WizardInfo existWizardInfo = wizardInfoRepository.findByName(wizardInfo.getName().trim());
-        if (existWizardInfo != null) {
-            throw new WizardInfoExistException("Wizard info exists, consider update it with wizard Id: " + existWizardInfo.getId());
-        }
-        String joinedDate = String.valueOf(java.time.LocalDate.now());
-        wizardInfo.setName(wizardInfo.getName().trim());
-        wizardInfo.setJoinedDate(joinedDate);
-        wizardInfo.setActive(true);
-        return wizardInfoRepository.save(wizardInfo);
-    }
-
-    @Override
-    public List<WizardInfo> getAllWizardInfo() {
-        if (wizardInfoRepository.findAll().isEmpty()) {
-            throw new NoWizardInfoFoundException("There is no wizard info in the database.");
-        }
-        return wizardInfoRepository.findAll();
-    }
-
-
-    @Override
-    public WizardInfo getWizardInfoById(String id) {
-        return wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
-    }
-
-    @Override
-    public WizardInfo updateWizardInfoById(String id, @Valid WizardInfo wizardInfo) {
-        WizardInfo existingWizardInfo = wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
-        WizardInfo existWizardInfoName = wizardInfoRepository.findByName(wizardInfo.getName().trim());
-        if (existWizardInfoName == null || existWizardInfoName != null && existingWizardInfo.getName().equalsIgnoreCase(wizardInfo.getName().trim())) {
-            existingWizardInfo.setName(wizardInfo.getName().trim());
-            existingWizardInfo.setAge(wizardInfo.getAge());
-            existingWizardInfo.setActive(wizardInfo.isActive());
-            return wizardInfoRepository.save(existingWizardInfo);
-        } else {
-            throw new WizardInfoExistException("Wizard name exists, consider change to another name");
+    public WizardInfo saveWizardInfo(WizardInfo wizardInfo) throws HttpRequestMethodNotSupportedException {
+        logger.info("Server WizardInfoService.saveWizardInfo");
+        try {
+            WizardInfo existWizardInfo = wizardInfoRepository.findByName(wizardInfo.getName().trim());
+            if (existWizardInfo != null) {
+                throw new WizardInfoExistException("Wizard name exists, consider change to another name.");
+            }
+            WizardInfo validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfo);
+            String joinedDate = String.valueOf(java.time.LocalDate.now());
+            validatedWizardInfo.setName(wizardInfo.getName().trim());
+            validatedWizardInfo.setJoinedDate(joinedDate);
+            validatedWizardInfo.setActive(true);
+            return wizardInfoRepository.save(validatedWizardInfo);
+        } catch (NullPointerException e) {
+            throw new InvalidWizardInfoDetailsException("Fields must not be null.");
+        } catch (HttpServerErrorException e) {
+            throw new ServerErrorException(e.getLocalizedMessage());
         }
     }
 
     @Override
-    public String deleteWizardInfo(String id) {
-        if (!wizardInfoRepository.findById(UUID.fromString(id)).isPresent()) {
-            throw new WizardIdNotFoundException("Wizard ID does not exist. -- " + id);
+    public List<WizardInfo> getAllWizardInfo() throws HttpRequestMethodNotSupportedException {
+        logger.info("Server WizardInfoService.getAllWizardInfo");
+        try {
+            if (wizardInfoRepository.findAll().isEmpty()) {
+                throw new NoWizardInfoFoundException("There is no wizard info in the database.");
+            }
+            return wizardInfoRepository.findAll();
+        } catch (HttpServerErrorException e) {
+            throw new ServerErrorException(e.getLocalizedMessage());
         }
-        wizardInfoRepository.deleteById(UUID.fromString(id));
-        return "Wizard info has been deleted successfully !\tID: " + id;
+    }
+
+
+    @Override
+    public WizardInfo getWizardInfoById(String id) throws HttpRequestMethodNotSupportedException {
+        logger.info("Server WizardInfoService.getWizardInfoById");
+        try {
+            return wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
+        } catch (HttpServerErrorException e) {
+            throw new ServerErrorException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public WizardInfo updateWizardInfoById(String id, WizardInfo wizardInfo) throws HttpRequestMethodNotSupportedException {
+        logger.info("Server WizardInfoService.updateWizardInfoById");
+        try {
+            WizardInfo existingWizardInfo = wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
+            WizardInfo existWizardInfoName = wizardInfoRepository.findByName(wizardInfo.getName().trim());
+            if (existWizardInfoName == null || existWizardInfoName != null && existingWizardInfo.getName().equalsIgnoreCase(wizardInfo.getName().trim())) {
+                WizardInfo validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfo);
+                existingWizardInfo.setName(validatedWizardInfo.getName().trim());
+                existingWizardInfo.setAge(validatedWizardInfo.getAge());
+                existingWizardInfo.setActive(validatedWizardInfo.isActive());
+                return wizardInfoRepository.save(existingWizardInfo);
+            } else {
+                throw new WizardInfoExistException("Wizard name exists, consider change to another name.");
+            }
+        } catch (NullPointerException e) {
+            throw new InvalidWizardInfoDetailsException("Fields must not be null.");
+        } catch (HttpServerErrorException e) {
+            throw new ServerErrorException(e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public String deleteWizardInfo(String id) throws HttpRequestMethodNotSupportedException {
+        logger.info("Server WizardInfoService.deleteWizardInfo");
+        try {
+            if (!wizardInfoRepository.findById(UUID.fromString(id)).isPresent()) {
+                throw new WizardIdNotFoundException("Wizard Id does not exist. -- " + id);
+            }
+            wizardInfoRepository.deleteById(UUID.fromString(id));
+            return "Wizard info has been deleted successfully !\tId: " + id;
+        } catch (HttpServerErrorException e) {
+            throw new ServerErrorException(e.getLocalizedMessage());
+        }
     }
 }

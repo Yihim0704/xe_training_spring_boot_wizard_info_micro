@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -32,18 +32,38 @@ public class ServerExceptionsHandler {
         return traceId;
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public Map<String, Object> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
         Map<String, Object> message = new HashMap<>();
-        Map<String, String> errorMap = new HashMap<>();
-        String methodArgumentNotValidExceptionTraceId = getTraceId();
-        ex.getBindingResult().getFieldErrors().forEach(error -> {
-            errorMap.put(error.getField(), error.getDefaultMessage());
-        });
-        message.put("code", HttpStatus.BAD_REQUEST.toString());
-        message.put("message", errorMap);
-        ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), methodArgumentNotValidExceptionTraceId, message);
-        logger.info("MethodArgumentNotValidExceptionTraceId: {}", methodArgumentNotValidExceptionTraceId);
+        String httpRequestMethodNotSupportedExceptionTraceId = getTraceId();
+        message.put("code", HttpStatus.METHOD_NOT_ALLOWED.value());
+        message.put("message", ex.getLocalizedMessage());
+        ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), httpRequestMethodNotSupportedExceptionTraceId, message);
+        logger.info("HttpRequestMethodNotSupportedExceptionTraceId: {}", httpRequestMethodNotSupportedExceptionTraceId);
+        logger.info(String.valueOf(exceptionFormat.toFormat()));
+        return exceptionFormat.toFormat();
+    }
+
+    @ExceptionHandler(ServerErrorException.class)
+    public Map<String, Object> handleServerErrorException(ServerErrorException ex) {
+        Map<String, Object> message = new HashMap<>();
+        String serverErrorExceptionTraceId = getTraceId();
+        message.put("code", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        message.put("message", ex.getLocalizedMessage());
+        ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), serverErrorExceptionTraceId, message);
+        logger.info("ServerErrorExceptionTraceId: {}", serverErrorExceptionTraceId);
+        logger.info(String.valueOf(exceptionFormat.toFormat()));
+        return exceptionFormat.toFormat();
+    }
+
+    @ExceptionHandler(InvalidWizardInfoDetailsException.class)
+    public Map<String, Object> handleInvalidWizardInfoDetailsException(InvalidWizardInfoDetailsException ex) {
+        Map<String, Object> message = new HashMap<>();
+        String invalidWizardInfoDetailsExceptionTraceId = getTraceId();
+        message.put("code", HttpStatus.BAD_REQUEST.value());
+        message.put("message", ex.getLocalizedMessage());
+        ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), invalidWizardInfoDetailsExceptionTraceId, message);
+        logger.info("InvalidWizardInfoDetailsExceptionTraceId: {}", invalidWizardInfoDetailsExceptionTraceId);
         logger.info(String.valueOf(exceptionFormat.toFormat()));
         return exceptionFormat.toFormat();
     }
@@ -51,11 +71,11 @@ public class ServerExceptionsHandler {
     @ExceptionHandler(WizardInfoExistException.class)
     public Map<String, Object> handleWizardInfoExistException(WizardInfoExistException ex) {
         Map<String, Object> message = new HashMap<>();
-        String wizardInfoExistException = getTraceId();
-        message.put("code", HttpStatus.CONFLICT.toString());
+        String wizardInfoExistExceptionTraceId = getTraceId();
+        message.put("code", HttpStatus.CONFLICT.value());
         message.put("message", ex.getLocalizedMessage());
-        ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), wizardInfoExistException, message);
-        logger.info("WizardInfoExistExceptionTraceId: {}", wizardInfoExistException);
+        ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), wizardInfoExistExceptionTraceId, message);
+        logger.info("WizardInfoExistExceptionTraceId: {}", wizardInfoExistExceptionTraceId);
         logger.info(String.valueOf(exceptionFormat.toFormat()));
         return exceptionFormat.toFormat();
     }
@@ -64,7 +84,7 @@ public class ServerExceptionsHandler {
     public Map<String, Object> handleNoWizardInfoFoundException(NoWizardInfoFoundException ex) {
         Map<String, Object> message = new HashMap<>();
         String noWizardInfoFoundExceptionTraceId = getTraceId();
-        message.put("code", HttpStatus.NO_CONTENT.toString());
+        message.put("code", HttpStatus.NO_CONTENT.value());
         message.put("message", ex.getLocalizedMessage());
         ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), noWizardInfoFoundExceptionTraceId, message);
         logger.info("NoWizardInfoFoundExceptionTraceId: {}", noWizardInfoFoundExceptionTraceId);
@@ -76,7 +96,7 @@ public class ServerExceptionsHandler {
     public Map<String, Object> handleWizardIdNotFoundException(WizardIdNotFoundException ex) {
         Map<String, Object> message = new HashMap<>();
         String wizardIdNotFoundExceptionTraceId = getTraceId();
-        message.put("code", HttpStatus.NOT_FOUND.toString());
+        message.put("code", HttpStatus.NOT_FOUND.value());
         message.put("message", ex.getLocalizedMessage());
         ExceptionFormat exceptionFormat = new ExceptionFormat("NOK", 1, LocalDateTime.now(), wizardIdNotFoundExceptionTraceId, message);
         logger.info("WizardIdNotFoundExceptionTraceId: {}", wizardIdNotFoundExceptionTraceId);
