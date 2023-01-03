@@ -1,6 +1,7 @@
 package com.example.wizard_info_micro.service;
 
 import com.example.wizard_info_micro.business.DetailsValidation;
+import com.example.wizard_info_micro.dao.WizardInfoDao;
 import com.example.wizard_info_micro.database.WizardInfoRepository;
 import com.example.wizard_info_micro.entity.WizardInfo;
 import com.example.wizard_info_micro.exception.server.*;
@@ -14,6 +15,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class WizardInfoServiceImpl implements WizardInfoService {
@@ -27,22 +29,26 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private WizardInfoDao wizardInfoDao;
+
     private static final Logger logger = LoggerFactory.getLogger(WizardInfoServiceImpl.class);
 
     @Override
     public WizardInfo saveWizardInfo(WizardInfo wizardInfo) throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoService.saveWizardInfo");
         try {
-            WizardInfo existWizardInfo = wizardInfoRepository.findByName(wizardInfo.getName().trim());
-            if (existWizardInfo != null) {
+            if (wizardInfoDao.findDuplicatedName(wizardInfo)) {
                 throw new WizardInfoExistException("Wizard name exists, consider change to another name.");
+            } else {
+                detailsValidation.wizardInfoValidation(wizardInfo);
+                WizardInfo validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfo);
+                String joinedDate = String.valueOf(java.time.LocalDate.now());
+                validatedWizardInfo.setName(wizardInfo.getName().trim());
+                validatedWizardInfo.setJoinedDate(joinedDate);
+                validatedWizardInfo.setActive(true);
+                return wizardInfoRepository.save(validatedWizardInfo);
             }
-            WizardInfo validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfo);
-            String joinedDate = String.valueOf(java.time.LocalDate.now());
-            validatedWizardInfo.setName(wizardInfo.getName().trim());
-            validatedWizardInfo.setJoinedDate(joinedDate);
-            validatedWizardInfo.setActive(true);
-            return wizardInfoRepository.save(validatedWizardInfo);
         } catch (NullPointerException e) {
             throw new InvalidWizardInfoDetailsException("Fields must not be null.");
         } catch (HttpServerErrorException e) {
@@ -57,7 +63,10 @@ public class WizardInfoServiceImpl implements WizardInfoService {
             if (wizardInfoRepository.findAll().isEmpty()) {
                 throw new NoWizardInfoFoundException("There is no wizard info in the database.");
             }
-            return wizardInfoRepository.findAll();
+            return wizardInfoRepository.findAll()
+                    .stream()
+                    .map(wizardInfo -> modelMapper.map(wizardInfo, WizardInfo.class))
+                    .collect(Collectors.toList());
         } catch (HttpServerErrorException e) {
             throw new ServerErrorException(e.getLocalizedMessage());
         }
@@ -79,8 +88,8 @@ public class WizardInfoServiceImpl implements WizardInfoService {
         logger.info("Server WizardInfoService.updateWizardInfoById");
         try {
             WizardInfo existingWizardInfo = wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
-            WizardInfo existWizardInfoName = wizardInfoRepository.findByName(wizardInfo.getName().trim());
-            if (existWizardInfoName == null || existWizardInfoName != null && existingWizardInfo.getName().equalsIgnoreCase(wizardInfo.getName().trim())) {
+            boolean existWizardInfoName = wizardInfoDao.findDuplicatedName(wizardInfo);
+            if (!existWizardInfoName || existingWizardInfo.getName().equalsIgnoreCase(wizardInfo.getName().trim())) {
                 WizardInfo validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfo);
                 existingWizardInfo.setName(validatedWizardInfo.getName().trim());
                 existingWizardInfo.setAge(validatedWizardInfo.getAge());
