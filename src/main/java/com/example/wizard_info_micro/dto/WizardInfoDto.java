@@ -9,6 +9,5 @@ public class WizardInfoDto {
     private UUID id;
     private String name;
     private int age;
-    private String joinedDate;
     private boolean active;
 }
