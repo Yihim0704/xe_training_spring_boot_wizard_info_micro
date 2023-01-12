@@ -87,7 +87,7 @@ public class WizardInfoControllerMockMvcTests {
         wizardInfo = new WizardInfo(sampleWizardInfoId, "wizard c", 39, String.valueOf(java.time.LocalDate.now()), true);
         WizardInfoResponseDto expected = modelMapper.map(wizardInfo, WizardInfoResponseDto.class);
         when(wizardInfoService.getWizardInfoById(sampleWizardInfoId.toString())).thenReturn(expected);
-        MvcResult mvcResult = mockMvc.perform(get("/api/v1/wizard-info/find-id/{id}", sampleWizardInfoId)).andExpect(MockMvcResultMatchers.status().isOk()).andDo(print()).andReturn();
+        MvcResult mvcResult = mockMvc.perform(get("/api/v1/wizard-info/find-id/{id}", sampleWizardInfoId.toString())).andExpect(MockMvcResultMatchers.status().isOk()).andDo(print()).andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         WizardInfoResponseDto wizardInfoResponseDto = new ObjectMapper().readValue(contentAsString, WizardInfoResponseDto.class);
         assertThat(wizardInfoResponseDto).isEqualTo(expected);
@@ -131,7 +131,7 @@ public class WizardInfoControllerMockMvcTests {
         wizardInfo = new WizardInfo(sampleWizardInfoId, "wizard f", 69, String.valueOf(java.time.LocalDate.now()), true);
         String expected = "Wizard info has been deleted successfully !\tId: " + sampleWizardInfoId.toString();
         when(wizardInfoService.deleteWizardInfo(sampleWizardInfoId.toString())).thenReturn(expected);
-        MvcResult mvcResult = mockMvc.perform(delete("/api/v1/wizard-info/delete-id/{id}", sampleWizardInfoId)).andExpect(MockMvcResultMatchers.status().isOk()).andDo(print()).andReturn();
+        MvcResult mvcResult = mockMvc.perform(delete("/api/v1/wizard-info/delete-id/{id}", sampleWizardInfoId.toString())).andExpect(MockMvcResultMatchers.status().isOk()).andDo(print()).andReturn();
         String contentAsString = mvcResult.getResponse().getContentAsString();
         assertThat(contentAsString).isEqualTo(expected);
     }
