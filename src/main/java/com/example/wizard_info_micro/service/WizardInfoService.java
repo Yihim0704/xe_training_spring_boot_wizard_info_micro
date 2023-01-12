@@ -1,19 +1,20 @@
 package com.example.wizard_info_micro.service;
 
-import com.example.wizard_info_micro.entity.WizardInfo;
+import com.example.wizard_info_micro.dto.WizardInfoRequestDto;
+import com.example.wizard_info_micro.dto.WizardInfoResponseDto;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 import java.util.List;
 
 public interface WizardInfoService {
 
-    WizardInfo saveWizardInfo(WizardInfo wizardInfo) throws HttpRequestMethodNotSupportedException;
+    WizardInfoResponseDto saveWizardInfo(WizardInfoRequestDto wizardInfoRequestDto) throws HttpRequestMethodNotSupportedException;
 
-    List<WizardInfo> getAllWizardInfo() throws HttpRequestMethodNotSupportedException;
+    List<WizardInfoResponseDto> getAllWizardInfo() throws HttpRequestMethodNotSupportedException;
 
-    WizardInfo getWizardInfoById(String id) throws HttpRequestMethodNotSupportedException;
+    WizardInfoResponseDto getWizardInfoById(String id) throws HttpRequestMethodNotSupportedException;
 
-    WizardInfo updateWizardInfoById(String id, WizardInfo wizardInfo) throws HttpRequestMethodNotSupportedException;
+    WizardInfoResponseDto updateWizardInfoById(String id, WizardInfoRequestDto wizardInfoRequestDto) throws HttpRequestMethodNotSupportedException;
 
     String deleteWizardInfo(String id) throws HttpRequestMethodNotSupportedException;
 

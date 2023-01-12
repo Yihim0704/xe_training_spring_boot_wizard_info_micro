@@ -3,6 +3,8 @@ package com.example.wizard_info_micro.service;
 import com.example.wizard_info_micro.business.DetailsValidation;
 import com.example.wizard_info_micro.dao.WizardInfoDao;
 import com.example.wizard_info_micro.database.WizardInfoRepository;
+import com.example.wizard_info_micro.dto.WizardInfoRequestDto;
+import com.example.wizard_info_micro.dto.WizardInfoResponseDto;
 import com.example.wizard_info_micro.entity.WizardInfo;
 import com.example.wizard_info_micro.exception.server.*;
 import org.modelmapper.ModelMapper;
@@ -35,19 +37,21 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     private static final Logger logger = LoggerFactory.getLogger(WizardInfoServiceImpl.class);
 
     @Override
-    public WizardInfo saveWizardInfo(WizardInfo wizardInfo) throws HttpRequestMethodNotSupportedException {
+    public WizardInfoResponseDto saveWizardInfo(WizardInfoRequestDto wizardInfoRequestDto) throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoService.saveWizardInfo");
         try {
-            if (wizardInfoDao.findDuplicatedName(wizardInfo)) {
+            if (wizardInfoDao.findDuplicatedName(wizardInfoRequestDto)) {
                 throw new WizardInfoExistException("Wizard name exists, consider change to another name.");
             } else {
-                detailsValidation.wizardInfoValidation(wizardInfo);
-                WizardInfo validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfo);
+                detailsValidation.wizardInfoValidation(wizardInfoRequestDto);
+                WizardInfoRequestDto validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfoRequestDto);
+                WizardInfo saveWizardInfoToDb = modelMapper.map(validatedWizardInfo, WizardInfo.class);
                 String joinedDate = String.valueOf(java.time.LocalDate.now());
-                validatedWizardInfo.setName(wizardInfo.getName().trim());
-                validatedWizardInfo.setJoinedDate(joinedDate);
-                validatedWizardInfo.setActive(true);
-                return wizardInfoRepository.save(validatedWizardInfo);
+                saveWizardInfoToDb.setName(validatedWizardInfo.getName().trim());
+                saveWizardInfoToDb.setJoinedDate(joinedDate);
+                saveWizardInfoToDb.setActive(true);
+                wizardInfoRepository.save(saveWizardInfoToDb);
+                return modelMapper.map(saveWizardInfoToDb, WizardInfoResponseDto.class);
             }
         } catch (NullPointerException e) {
             throw new InvalidWizardInfoDetailsException("Fields must not be null.");
@@ -57,16 +61,13 @@ public class WizardInfoServiceImpl implements WizardInfoService {
     }
 
     @Override
-    public List<WizardInfo> getAllWizardInfo() throws HttpRequestMethodNotSupportedException {
+    public List<WizardInfoResponseDto> getAllWizardInfo() throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoService.getAllWizardInfo");
         try {
             if (wizardInfoRepository.findAll().isEmpty()) {
                 throw new NoWizardInfoFoundException("There is no wizard info in the database.");
             }
-            return wizardInfoRepository.findAll()
-                    .stream()
-                    .map(wizardInfo -> modelMapper.map(wizardInfo, WizardInfo.class))
-                    .collect(Collectors.toList());
+            return wizardInfoRepository.findAll().stream().map(wizardInfo -> modelMapper.map(wizardInfo, WizardInfoResponseDto.class)).collect(Collectors.toList());
         } catch (HttpServerErrorException e) {
             throw new ServerErrorException(e.getLocalizedMessage());
         }
@@ -74,27 +75,29 @@ public class WizardInfoServiceImpl implements WizardInfoService {
 
 
     @Override
-    public WizardInfo getWizardInfoById(String id) throws HttpRequestMethodNotSupportedException {
+    public WizardInfoResponseDto getWizardInfoById(String id) throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoService.getWizardInfoById");
         try {
-            return wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
+            WizardInfo wizardInfo = wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
+            return modelMapper.map(wizardInfo, WizardInfoResponseDto.class);
         } catch (HttpServerErrorException e) {
             throw new ServerErrorException(e.getLocalizedMessage());
         }
     }
 
     @Override
-    public WizardInfo updateWizardInfoById(String id, WizardInfo wizardInfo) throws HttpRequestMethodNotSupportedException {
+    public WizardInfoResponseDto updateWizardInfoById(String id, WizardInfoRequestDto wizardInfoRequestDto) throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoService.updateWizardInfoById");
         try {
             WizardInfo existingWizardInfo = wizardInfoRepository.findById(UUID.fromString(id)).orElseThrow(() -> new WizardIdNotFoundException("Wizard Id does not exist. -- " + id));
-            boolean existWizardInfoName = wizardInfoDao.findDuplicatedName(wizardInfo);
-            if (!existWizardInfoName || existingWizardInfo.getName().equalsIgnoreCase(wizardInfo.getName().trim())) {
-                WizardInfo validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfo);
+            boolean existWizardInfoName = wizardInfoDao.findDuplicatedName(wizardInfoRequestDto);
+            if (!existWizardInfoName || existingWizardInfo.getName().equalsIgnoreCase(wizardInfoRequestDto.getName().trim())) {
+                WizardInfoRequestDto validatedWizardInfo = detailsValidation.wizardInfoValidation(wizardInfoRequestDto);
                 existingWizardInfo.setName(validatedWizardInfo.getName().trim());
                 existingWizardInfo.setAge(validatedWizardInfo.getAge());
                 existingWizardInfo.setActive(validatedWizardInfo.isActive());
-                return wizardInfoRepository.save(existingWizardInfo);
+                wizardInfoRepository.save(existingWizardInfo);
+                return modelMapper.map(existingWizardInfo, WizardInfoResponseDto.class);
             } else {
                 throw new WizardInfoExistException("Wizard name exists, consider change to another name.");
             }

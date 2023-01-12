@@ -1,7 +1,7 @@
 package com.example.wizard_info_micro.controller;
 
-import com.example.wizard_info_micro.dto.WizardInfoDto;
-import com.example.wizard_info_micro.entity.WizardInfo;
+import com.example.wizard_info_micro.dto.WizardInfoRequestDto;
+import com.example.wizard_info_micro.dto.WizardInfoResponseDto;
 import com.example.wizard_info_micro.service.WizardInfoService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -13,7 +13,6 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/wizard-info")
@@ -28,47 +27,33 @@ public class WizardInfoController {
     private WizardInfoService wizardInfoService;
 
     @PostMapping("add")
-    public ResponseEntity<WizardInfoDto> addWizardInfo(@RequestBody WizardInfoDto wizardInfoDto) throws HttpRequestMethodNotSupportedException {
+    public ResponseEntity<WizardInfoResponseDto> addWizardInfo(@RequestBody WizardInfoRequestDto wizardInfoRequestDto) throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoController.addWizardInfo");
 
-        WizardInfo wizardInfoRequest = modelMapper.map(wizardInfoDto, WizardInfo.class);
+        WizardInfoResponseDto wizardInfoResponse = wizardInfoService.saveWizardInfo(wizardInfoRequestDto);
 
-        WizardInfo wizardInfo = wizardInfoService.saveWizardInfo(wizardInfoRequest);
-
-        WizardInfoDto wizardInfoResponse = modelMapper.map(wizardInfo, WizardInfoDto.class);
-
-        return new ResponseEntity<WizardInfoDto>(wizardInfoResponse, HttpStatus.CREATED);
+        return new ResponseEntity<WizardInfoResponseDto>(wizardInfoResponse, HttpStatus.CREATED);
     }
 
     @GetMapping("find-all")
-    public List<WizardInfoDto> findAllWizardInfo() throws HttpRequestMethodNotSupportedException {
+    public ResponseEntity<List<WizardInfoResponseDto>> findAllWizardInfo() throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoController.findAllWizardInfo");
-        return wizardInfoService.getAllWizardInfo()
-                .stream()
-                .map(wizardInfo -> modelMapper.map(wizardInfo, WizardInfoDto.class))
-                .collect(Collectors.toList());
+        return new ResponseEntity<List<WizardInfoResponseDto>>(wizardInfoService.getAllWizardInfo(), HttpStatus.OK);
     }
 
     @GetMapping("find-id/{id}")
-    public ResponseEntity<WizardInfoDto> findWizardInfoById(@PathVariable String id) throws HttpRequestMethodNotSupportedException {
+    public ResponseEntity<WizardInfoResponseDto> findWizardInfoById(@PathVariable String id) throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoController.findWizardInfoById");
-        WizardInfo wizardInfo = wizardInfoService.getWizardInfoById(id);
-
-        WizardInfoDto wizardInfoResponse = modelMapper.map(wizardInfo, WizardInfoDto.class);
-        return ResponseEntity.ok().body(wizardInfoResponse);
+        return ResponseEntity.ok().body(wizardInfoService.getWizardInfoById(id));
     }
 
     @PutMapping("update-id/{id}")
-    public ResponseEntity<WizardInfoDto> changeWizardInfoById(@PathVariable String id, @RequestBody WizardInfoDto wizardInfoDto) throws HttpRequestMethodNotSupportedException {
+    public ResponseEntity<WizardInfoResponseDto> changeWizardInfoById(@PathVariable String id, @RequestBody WizardInfoRequestDto wizardInfoRequestDto) throws HttpRequestMethodNotSupportedException {
         logger.info("Server WizardInfoController.changeWizardInfoById");
 
-        WizardInfo wizardInfoRequest = modelMapper.map(wizardInfoDto, WizardInfo.class);
+        WizardInfoResponseDto wizardInfoResponseDto = wizardInfoService.updateWizardInfoById(id, wizardInfoRequestDto);
 
-        WizardInfo wizardInfo = wizardInfoService.updateWizardInfoById(id, wizardInfoRequest);
-
-        WizardInfoDto wizardInfoResponse = modelMapper.map(wizardInfo, WizardInfoDto.class);
-
-        return ResponseEntity.ok().body(wizardInfoResponse);
+        return ResponseEntity.ok().body(wizardInfoResponseDto);
     }
 
     @DeleteMapping("delete-id/{id}")
